@@ -14,6 +14,9 @@ struct Options {
     token: Option<String>,
 }
 
+/// Prompts the user to enter a GH token.
+///
+/// Does not echo the token to the terminal.
 fn prompt_for_token() -> String {
     let token = match read_password_from_tty(Some("GitHub token: ")) {
         Ok(t) => t,
@@ -29,6 +32,7 @@ fn prompt_for_token() -> String {
     token
 }
 
+/// Entry point.
 fn main() {
     let options = Options::from_args();
     if env::var("RUST_LOG").is_err() {

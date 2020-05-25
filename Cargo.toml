@@ -1,0 +1,17 @@
+[package]
+name = "archive_my_stuff"
+version = "0.1.0"
+authors = ["Celeo <mattboulanger@fastmail.com>"]
+edition = "2018"
+description = ""
+readme = "README.md"
+homepage = "https://github.com/celeo/archive_my_stuff"
+repository = "https://github.com/celeo/archive_my_stuff"
+license = "MIT OR Apache-2.0"
+exclude = [
+  ".github"
+]
+
+[dependencies]
+kankyo = "0.3.0"
+reqwest = { version = "0.10.4", features = ["json"]}

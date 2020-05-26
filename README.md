@@ -2,15 +2,19 @@
 
 ![Rust CI](https://github.com/Celeo/archive_my_stuff/workflows/Rust%20CI/badge.svg?branch=master)
 
-A CLI program for interactively archiving your own GitHub repos.
+A CLI program for interactively archiving _your_ GitHub repos.
+
+## Why
+
+I had a bunch of old repos I wanted to archive, and doing it through the GitHub website was tedious.
 
 ## Installing
 
-TBD
+Download the latest release from the [releases tab](https://github.com/Celeo/archive_my_stuff/releases).
 
 ## Using
 
-TBD
+Run the binary. Supply the `--help` flag to get information on parameters. You'll need a [personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line), which you can generate at [https://github.com/settings/tokens](https://github.com/settings/tokens).
 
 ## Developing
 

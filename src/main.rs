@@ -1,9 +1,12 @@
+use anyhow::Result;
+use dialoguer::{theme::ColorfulTheme, Confirm};
 use log::debug;
 use rpassword::read_password_from_tty;
-use std::{env, process::exit};
+use std::{io::Write, process::exit};
 use structopt::StructOpt;
 
 mod github;
+use github::{GitHub, Repository};
 
 /// A CLI program for interactively archiving your own GitHub repos
 #[derive(Debug, StructOpt)]
@@ -32,17 +35,34 @@ fn prompt_for_token() -> String {
     token
 }
 
+/// Prompts the user for whether they want to archive the repo.
+fn prompt_to_archive(github: &GitHub, repo: &Repository) -> Result<()> {
+    let theme = ColorfulTheme::default();
+    let mut prompt = Confirm::with_theme(&theme);
+    prompt.with_prompt(&format!(
+        "Do you want to archive {}? Last update: {}",
+        repo.name, repo.pushed_at
+    ));
+    prompt.default(false);
+    if !prompt.interact().unwrap() {
+        return Ok(());
+    }
+    github.archive_repo(&repo.name)?;
+    Ok(())
+}
+
 /// Entry point.
 fn main() {
     let options = Options::from_args();
-    if env::var("RUST_LOG").is_err() {
-        if options.debug {
-            env::set_var("RUST_LOG", "archive_my_stuff=debug");
+
+    env_logger::Builder::new()
+        .format(|f, record| writeln!(f, "{}", record.args()))
+        .filter_level(if options.debug {
+            log::LevelFilter::Debug
         } else {
-            env::set_var("RUST_LOG", "archive_my_stuff=info");
-        }
-    }
-    pretty_env_logger::init();
+            log::LevelFilter::Info
+        })
+        .init();
 
     debug!("Determining token");
     let token = match options.token {
@@ -51,7 +71,7 @@ fn main() {
     };
 
     debug!("Setting up GitHub struct");
-    let github = match github::GitHub::new(&token) {
+    let github = match GitHub::new(&token) {
         Ok(g) => g,
         Err(e) => {
             eprintln!("Could not access GitHub: {}", e);
@@ -68,5 +88,10 @@ fn main() {
         }
     };
 
-    // TODO
+    debug!("Prompting for archiving");
+    for repo in repos {
+        if let Err(e) = prompt_to_archive(&github, &repo) {
+            eprintln!("Error: {}", e);
+        };
+    }
 }

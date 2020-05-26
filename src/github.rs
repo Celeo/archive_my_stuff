@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
+use log::debug;
 use reqwest::{blocking::Client, header};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -9,11 +10,12 @@ static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 const BASE_URL: &str = "https://api.github.com/";
 
 /// Represents a GH repo.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub(crate) struct Repository {
-    name: String,
-    full_name: String,
-    pushed_at: DateTime<Utc>,
+    pub(crate) name: String,
+    pub(crate) full_name: String,
+    pub(crate) pushed_at: DateTime<Utc>,
+    pub(crate) archived: bool,
 }
 
 /// Struct to encapsulate GH interactions.
@@ -53,12 +55,15 @@ impl GitHub {
             .client
             .get(&format!("{}users/{}/repos", BASE_URL, self.username))
             .send()?;
+        debug!("Repos get call response status: {}", resp.status());
         let data: Vec<Repository> = resp.json()?;
-        Ok(data)
+        let not_archived = data.iter().filter(|&r| !r.archived).cloned().collect();
+        Ok(not_archived)
     }
 
     /// Archive a single repo.
     pub(crate) fn archive_repo(&self, repo_name: &str) -> Result<()> {
+        debug!("Debugging {}", repo_name);
         let resp = self
             .client
             .patch(&format!(
@@ -66,9 +71,10 @@ impl GitHub {
                 BASE_URL, self.username, repo_name
             ))
             .json(&json!({
-                "archive": true,
+                "archived": true,
             }))
             .send()?;
+        debug!("Repo patch call response status: {}", resp.status());
         if !resp.status().is_success() {
             return Err(anyhow!(format!("Status code {}", resp.status())));
         }
@@ -79,6 +85,7 @@ impl GitHub {
 /// Get the username for an authenticated HTTP client.
 fn get_username(client: &Client) -> Result<String> {
     let resp = client.get(&format!("{}user", BASE_URL)).send()?;
+    debug!("Get username response status: {}", resp.status());
     if !resp.status().is_success() {
         return Err(anyhow!(format!("Status code {}", resp.status())));
     }

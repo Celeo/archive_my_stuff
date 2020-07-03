@@ -10,7 +10,7 @@ I had a bunch of old repos I wanted to archive, and doing it through the GitHub 
 
 ## Installing
 
-Download the latest release from the [releases tab](https://github.com/Celeo/archive_my_stuff/releases).
+Download the latest release from the [releases tab](https://github.com/Celeo/archive_my_stuff/releases). If you don't run Linux, you'll need to clone the repo and build the binary yourself using [Rust](https://www.rust-lang.org/),
 
 ## Using
 
